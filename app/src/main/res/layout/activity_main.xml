@@ -10,8 +10,74 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="net.blusoft.appautobusesbackoffice.MainActivity">
 
-    <TextView
+    <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:inputType="textPersonName"
+        android:ems="10"
+        android:layout_alignTop="@+id/editTextHInicio"
+        android:layout_alignParentEnd="true"
+        android:id="@+id/editTextHFin"
+        android:hint="Fecha Fin"
+        android:layout_toEndOf="@+id/rdgGrupo" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:ems="10"
+        android:id="@+id/editTextMatricula"
+        android:hint="Inserta la matrícula"
+        android:textAlignment="center"
+        android:layout_marginTop="41dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:ems="10"
+        android:layout_marginTop="74dp"
+        android:id="@+id/editTextHInicio"
+        android:textAlignment="viewStart"
+        android:hint="Fecha Inicio"
+        android:layout_below="@+id/rdgGrupo"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@+id/editTextHFin" />
+
+    <RadioGroup
+        android:id="@+id/rdgGrupo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="33dp"
+        android:orientation="vertical"
+        android:weightSum="1"
+        android:layout_below="@+id/editTextMatricula"
+        android:layout_alignStart="@+id/editTextMatricula"
+        android:layout_marginStart="20dp">
+
+        <RadioButton
+            android:text="Entre Fechas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="26dp"
+            android:id="@+id/radioButtonHoras" />
+
+        <RadioButton
+        android:text="Última Posición"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:id="@+id/radioButtonUltPos" />
+
+    </RadioGroup>
+
+    <Button
+        android:text="Enviar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toStartOf="@+id/editTextHFin"
+        android:id="@+id/buttonEnviar" />
 </RelativeLayout>
