@@ -2,8 +2,11 @@ package net.blusoft.appautobusesbackoffice;
 
 import android.content.Intent;
 import android.location.Location;
+import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -12,17 +15,18 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+import java.util.Random;
+
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, View.OnClickListener {
 
     private GoogleMap mMap;
-    String matricula_Autobus=null;
+    String matricula_Autobus = null;
     int opcioEscollida;
-    static final int OPCIO_ULTIMA=1;
-    static final int OPCIO_ENTRE_DADES=2;
+    static final int OPCIO_ULTIMA = 1;
+    static final int OPCIO_ENTRE_DADES = 2;
 
 
     Location posicio;
-
 
 
     @Override
@@ -30,12 +34,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         //Obtenim l'intent i les dades necesaries.
+        Button boto = (Button) findViewById(R.id.btnOpciones);
+        boto.setOnClickListener(this);
         if (savedInstanceState == null) {
             Intent extras = getIntent();
-            matricula_Autobus=extras.getStringExtra("matricula");
-            opcioEscollida=extras.getIntExtra("opcion",0);
+            matricula_Autobus = extras.getStringExtra("matricula");
+            opcioEscollida = extras.getIntExtra("opcion", 0);
         }
-        if(matricula_Autobus!=null){
+        if (matricula_Autobus != null) {
             //TODO DO things...
 
             posicio = new Location("");//provider name is unecessary
@@ -62,14 +68,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-
+        mMap.getUiSettings().setMapToolbarEnabled(false);
+        LatLng posAutobus = new LatLng(posicio.getLatitude(), posicio.getLongitude());
         mMap.addMarker(new MarkerOptions()
-                .position(new LatLng(posicio.getLatitude(), posicio.getLongitude()))
+                .position(posAutobus)
                 .title(matricula_Autobus));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(posAutobus, 10));
+
+        final Handler handler = new Handler();
+        final Runnable r = new Runnable() {
+            public void run() {
+                System.out.println("Hola!!!");
+                Random rand = new Random();
+                LatLng posAutobus = new LatLng(posicio.getLatitude() + rand.nextFloat(), posicio.getLongitude() + rand.nextFloat());
+                mMap.addMarker(new MarkerOptions()
+                        .position(posAutobus)
+                        .title(matricula_Autobus));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(posAutobus, 10));
+
+                if (1 == 1) {
+                    handler.postDelayed(this, 10000);
+                }
+            }
+        };
+        handler.postDelayed(r, 10000);
+    }
+
+
+    @Override
+    public void onClick(View view) {
+        if (R.id.btnOpciones == view.getId()) {
+            Intent i = new Intent(this, MainActivity.class);
+            startActivity(i);
+            finish();
+        }
     }
 }
