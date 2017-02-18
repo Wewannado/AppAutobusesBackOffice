@@ -2,9 +2,11 @@ package net.blusoft.appautobusesbackoffice;
 
 import android.content.Intent;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -15,6 +17,12 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Random;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, View.OnClickListener {
@@ -24,6 +32,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     int opcioEscollida;
     static final int OPCIO_ULTIMA = 1;
     static final int OPCIO_ENTRE_DADES = 2;
+    private static final String LOGTAG = "BackOfficeAutobuses Map";
+    boolean actiu= true;
 
 
     Location posicio;
@@ -78,20 +88,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         final Handler handler = new Handler();
         final Runnable r = new Runnable() {
             public void run() {
-                System.out.println("Hola!!!");
+                AsyncTask tarea = new TareaObtenerUltimaPosicion();
+                tarea.execute();
                 Random rand = new Random();
-                LatLng posAutobus = new LatLng(posicio.getLatitude() + rand.nextFloat(), posicio.getLongitude() + rand.nextFloat());
+                /*LatLng posAutobus = new LatLng(posicio.getLatitude() + rand.nextFloat() / 1000, posicio.getLongitude() + rand.nextFloat() / 1000);
                 mMap.addMarker(new MarkerOptions()
                         .position(posAutobus)
                         .title(matricula_Autobus));
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(posAutobus, 10));
-
-                if (1 == 1) {
-                    handler.postDelayed(this, 10000);
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(posAutobus, 15));*/
+                if (actiu) {
+                    handler.postDelayed(this, 3000);
                 }
             }
         };
-        handler.postDelayed(r, 10000);
+        handler.postDelayed(r, 3000);
     }
 
 
@@ -100,7 +110,67 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (R.id.btnOpciones == view.getId()) {
             Intent i = new Intent(this, MainActivity.class);
             startActivity(i);
+            actiu=false;
             finish();
         }
     }
+
+    class TareaObtenerUltimaPosicion extends AsyncTask<Object, Integer, Boolean> {
+        JSONObject posicio;
+
+        @Override
+        protected Boolean doInBackground(Object... params) {
+            if(opcioEscollida==MapsActivity.OPCIO_ULTIMA){
+                pintarUltimaPosicion(matricula_Autobus);
+            }
+            return true;
+        }
+
+       // private void pintarEntrePosiciones()
+        private void pintarUltimaPosicion(String matricula){
+            BufferedReader reader;
+            try {
+                URL url = new URL("http://192.168.50.28:8080/ServicioWeb/webresources/generic/obtenerUltimaPosicion/" + matricula);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setReadTimeout(1000 /*milliseconds*/);
+                conn.setConnectTimeout(5000);
+                conn.setRequestProperty("Content-Type", "application/json");
+                reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuffer buffer = new StringBuffer();
+                String line = reader.readLine();
+                System.out.println(line);
+                posicio = new JSONObject(line);
+                System.out.println(posicio.toString());
+                System.out.println(line);
+
+            } catch (java.io.IOException ex) {
+                Log.e(LOGTAG, "Temps d'espera esgotat al iniciar la conexio amb la BBDD extena");
+            } catch (org.json.JSONException ex) {
+                Log.e(LOGTAG, "Error en la transformacio de l'objecte JSON: " + ex);
+            }
+        }
+        protected void onPostExecute(Boolean result) {
+            if (!result) {
+                Log.e(LOGTAG, "No se ha podido acceder a la posicion.");
+            } else {
+                try {
+                    if (posicio != null) {
+                        LatLng posAutobus = new LatLng(posicio.getDouble("posX"), posicio.getDouble("posY"));
+                        mMap.addMarker(new MarkerOptions()
+                                .position(posAutobus)
+                                .title(posicio.getString("matricula")));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(posAutobus, 15));
+                    }
+                    else{
+                        Log.e(LOGTAG, "Error en la obtencio de la posicio");
+                    }
+                }catch(org.json.JSONException ex){
+                        Log.e(LOGTAG, "Error en la transformacio de l'objecte JSON: " + ex);
+                    }
+            }
+        }
+    }
+
 }
+

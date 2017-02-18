@@ -13,6 +13,7 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -20,7 +21,7 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private EditText editTextMatricula;
-    private int opcion;
+    private int opcion = MapsActivity.OPCIO_ULTIMA;
     RadioGroup radioGroup;
     TextView editTextHInicio;
     TextView editTextHFinal;
@@ -28,18 +29,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private DatePickerDialog toDatePickerDialog;
 
     private SimpleDateFormat dateFormatter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Button btnEnviar = (Button) findViewById(R.id.buttonEnviar);
         btnEnviar.setOnClickListener(this);
-        editTextMatricula = (EditText)findViewById(R.id.editTextMatricula);
+        editTextMatricula = (EditText) findViewById(R.id.editTextMatricula);
         radioGroup = (RadioGroup) findViewById(R.id.rdgGrupo);
         editTextHInicio = (TextView) findViewById(R.id.editTextHInicio);
         editTextHFinal = (TextView) findViewById(R.id.editTextHFin);
         //DATE
-        dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.FRANCE);
+        dateFormatter = new SimpleDateFormat("dd-mm-yyyy hh24:mm:ss", Locale.FRANCE);
         editTextHFinal.setInputType(InputType.TYPE_NULL);
         editTextHFinal.requestFocus();
         editTextHInicio.setInputType(InputType.TYPE_NULL);
@@ -52,32 +54,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
-
-        if(view == editTextHInicio) {
+//TODO falta que los datepicker recojan tambien la hora. el formato tiene que ser dd-mm-yyyy hh24:mm:ss
+        if (view == editTextHInicio) {
             fromDatePickerDialog.show();
-        } else if(view == editTextHFinal) {
+        } else if (view == editTextHFinal) {
             toDatePickerDialog.show();
         }
-        if (R.id.buttonEnviar == view.getId())
-        {
-            System.out.println(opcion);
-            Intent i = new Intent(this, MapsActivity.class);
-            i.putExtra("matricula", editTextMatricula.toString());
-            i.putExtra("opcion", opcion);
-            i.putExtra("fechaInicio", editTextHInicio.toString());
-            i.putExtra("fechaFinal", editTextHFinal.toString());
-            startActivity(i);
+        System.out.println("date inicio vale" + editTextHInicio.getText().toString());
+        System.out.println("date fin vale " + editTextHFinal.getText().toString());
+
+        if (R.id.buttonEnviar == view.getId()) {
+            if (editTextMatricula.getText().toString().equals("")) {
+                System.out.println(editTextMatricula.getText().toString());
+                Toast.makeText(this, "Maricula Obligatoria", Toast.LENGTH_SHORT).show();
+            } else if (editTextHInicio.getText().toString().equals("") && editTextHFinal.getText().toString().equals("") && opcion == MapsActivity.OPCIO_ENTRE_DADES) {
+                Toast.makeText(this, "Fechas Obligatorias", Toast.LENGTH_SHORT).show();
+            } else {
+                System.out.println("opcion marcada: " + opcion);
+                Intent i = new Intent(this, MapsActivity.class);
+                i.putExtra("matricula", editTextMatricula.toString());
+                i.putExtra("opcion", opcion);
+                i.putExtra("fechaInicio", editTextHInicio.toString());
+                i.putExtra("fechaFinal", editTextHFinal.toString());
+                startActivity(i);
+            }
         }
     }
 
-    public void onRadioButtonClicked(View view)
-    {
-        switch (radioGroup.getCheckedRadioButtonId())
-        {
+    public void onRadioButtonClicked(View view) {
+        switch (radioGroup.getCheckedRadioButtonId()) {
             case R.id.radioButtonHoras:
                 editTextHInicio.setVisibility(View.VISIBLE);
                 editTextHFinal.setVisibility(View.VISIBLE);
-                opcion = MapsActivity.OPCIO_ULTIMA;
+                opcion = MapsActivity.OPCIO_ENTRE_DADES;
                 break;
             case R.id.radioButtonUltPos:
                 editTextHInicio.setVisibility(View.INVISIBLE);
@@ -86,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
         }
     }
+
     private void setDateTimeField() {
         editTextHInicio.setOnClickListener(this);
         editTextHFinal.setOnClickListener(this);
@@ -99,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 editTextHInicio.setText(dateFormatter.format(newDate.getTime()));
             }
 
-        },newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
+        }, newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
 
         toDatePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
 
@@ -109,15 +119,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 editTextHFinal.setText(dateFormatter.format(newDate.getTime()));
             }
 
-        },newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
+        }, newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
     }
-
-  /*  @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }*/
-
-
 }
