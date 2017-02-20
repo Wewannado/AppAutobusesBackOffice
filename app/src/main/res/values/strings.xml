@@ -1,4 +1,13 @@
 <resources>
     <string name="app_name">AppAutobusesBackOffice</string>
     <string name="title_activity_maps">Map</string>
+    <string name="tornar">Tornar</string>
+    <string name="atura_act_aut">Atura Act. Aut.</string>
+    <string name="fecha_fin">Fecha Fin</string>
+    <string name="selecciona_el_vehiculo">Selecciona el vehiculo.</string>
+    <string name="fecha_inicio">Fecha Inicio</string>
+    <string name="enviar">Enviar</string>
+    <string name="entre_fechas">Entre Fechas</string>
+    <string name="ltima_posici_n">Última Posición</string>
+    <string name="activaActAut">Activar Act. Aut.</string>
 </resources>

@@ -13,41 +13,39 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="textPersonName"
         android:ems="10"
         android:layout_alignTop="@+id/editTextHInicio"
         android:layout_alignParentEnd="true"
         android:id="@+id/editTextHFin"
-        android:hint="Fecha Fin"
+        android:hint="@string/fecha_fin"
         android:layout_toEndOf="@+id/rdgGrupo" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:ems="10"
-        android:id="@+id/editTextMatricula"
-        android:hint="Inserta la matrícula"
-        android:textAlignment="center"
-        android:layout_marginTop="41dp"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="textPersonName"
+        android:ems="10"
+        android:id="@+id/editTextMatricula"
+        android:textAlignment="center"
+        android:layout_marginTop="41dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="@string/selecciona_el_vehiculo"
+        android:textSize="24sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:ems="10"
         android:layout_marginTop="74dp"
         android:id="@+id/editTextHInicio"
         android:textAlignment="viewStart"
-        android:hint="Fecha Inicio"
+        android:hint="@string/fecha_inicio"
         android:layout_below="@+id/rdgGrupo"
         android:layout_alignParentStart="true"
         android:layout_toStartOf="@+id/rdgGrupo" />
 
     <Button
-        android:text="Enviar"
+        android:text="@string/enviar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/buttonEnviar"
@@ -65,7 +63,7 @@
         android:layout_centerHorizontal="true">
 
         <RadioButton
-            android:text="Entre Fechas"
+            android:text="@string/entre_fechas"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onClick="onRadioButtonClicked"
@@ -73,7 +71,7 @@
             android:id="@+id/radioButtonHoras" />
 
         <RadioButton
-        android:text="Última Posición"
+        android:text="@string/ltima_posici_n"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
             android:onClick="onRadioButtonClicked"
@@ -82,4 +80,12 @@
             android:checked="true" />
 
     </RadioGroup>
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinnerMatricules"
+        android:layout_below="@+id/editTextMatricula"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="11dp" />
 </RelativeLayout>
