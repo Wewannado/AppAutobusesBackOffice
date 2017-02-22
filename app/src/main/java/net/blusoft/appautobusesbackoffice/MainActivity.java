@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private DatePickerDialog toDatePickerDialog;
     Spinner spinnerMatricules;
     private SimpleDateFormat dateFormatter;
-    private ArrayList<String> matricules;
+    private ArrayList<String> matricules=new ArrayList<>();
     private boolean spinnerCarregat = false;
 
     @Override
@@ -61,38 +61,54 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //visibilidad
         editTextHInicio.setVisibility(View.INVISIBLE);
         editTextHFinal.setVisibility(View.INVISIBLE);
+        //Listeners
+        editTextHInicio.setOnClickListener(this);
+        editTextHFinal.setOnClickListener(this);
+        /*
+        Al crear la aplicacio, obtenim les dades remotes per tal d'omplir l'Spinner.
+         */
         new populateSpinner().execute();
     }
 
     @Override
     public void onClick(View view) {
-//TODO falta que los datepicker recojan tambien la hora. el formato tiene que ser dd-mm-yyyy hh24:mm:ss
+        //Si s'ha clicat al edit Text per seleccionar una data inicial
         if (view == editTextHInicio) {
             fromDatePickerDialog.show();
-        } else if (view == editTextHFinal) {
+        }
+        //Si s'ha clicat al edit Text per seleccionar una data final
+        if (view == editTextHFinal) {
             toDatePickerDialog.show();
         }
-        System.out.println("date inicio vale" + editTextHInicio.getText().toString());
-        System.out.println("date fin vale " + editTextHFinal.getText().toString());
 
+        //Si s'ha clicat al boto d'enviar dades
         if (R.id.buttonEnviar == view.getId()) {
+            //Validem que s'hagi carregat les dades de l'Spinner
             if (spinnerCarregat) {
+                //Si s'ha seleccionat la opcio entre dades, es obligatori posar les mateixes
                 if (editTextHInicio.getText().toString().equals("") && editTextHFinal.getText().toString().equals("") && opcion == MapsActivity.OPCIO_ENTRE_DADES) {
                     Toast.makeText(this, "Fechas Obligatorias", Toast.LENGTH_SHORT).show();
+                    //En cas contrari...
                 } else {
+                    //TODO En futures versions es podran veure el recorregut de tots els autobusos entre dues dades.
                     if (opcion == MapsActivity.OPCIO_ENTRE_DADES && spinnerMatricules.getSelectedItem().toString().equals("Todas")) {
                         Toast.makeText(MainActivity.this, "Veure les posicions entre dades de tots els autobusos no soportat en aquesta versió.", Toast.LENGTH_LONG).show();
                     } else {
+                        //Si no s'ha complert cap de les condicions anteriors, pasem a la segona activity.
                         System.out.println("opcion marcada: " + opcion);
                         Intent i = new Intent(this, MapsActivity.class);
                         i.putExtra("matricula", spinnerMatricules.getSelectedItem().toString());
+                        //La opcio seleccionada
                         i.putExtra("opcion", opcion);
                         i.putExtra("fechaInicio", editTextHInicio.getText().toString());
                         i.putExtra("fechaFinal", editTextHFinal.getText().toString());
                         startActivity(i);
+                        finish();
                     }
                 }
-            } else {
+            }
+            // No s'ha carregat l'Spinner, per tant, no pasem a la segona activity.
+            else {
                 Toast.makeText(MainActivity.this, "No s'han pogut carregar les dades. Hi ha conexió a internet?", Toast.LENGTH_LONG).show();
             }
         }
@@ -100,12 +116,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void onRadioButtonClicked(View view) {
         switch (radioGroup.getCheckedRadioButtonId()) {
+            //Si s'ha seleccionat veure el mapa entre dues dades
             case R.id.radioButtonHoras:
+                //Mostrem els inputs per a que l'usuari pugui inserir les dates entre les que vol veure
                 editTextHInicio.setVisibility(View.VISIBLE);
                 editTextHFinal.setVisibility(View.VISIBLE);
                 opcion = MapsActivity.OPCIO_ENTRE_DADES;
                 break;
+            //Si s'ha seleccionar veure les ultimes posicions
             case R.id.radioButtonUltPos:
+                //Ocultem els fields per a l'input de dates
                 editTextHInicio.setVisibility(View.INVISIBLE);
                 editTextHFinal.setVisibility(View.INVISIBLE);
                 opcion = MapsActivity.OPCIO_ULTIMA;
@@ -113,10 +133,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
+    /**
+     * Metode que crea dos datePickerDialog que mostren un DatePicker i, en retorna una data, la insereixen
+     * als editText corresponents
+     */
     private void setDateTimeField() {
-        editTextHInicio.setOnClickListener(this);
-        editTextHFinal.setOnClickListener(this);
+
 
         Calendar newCalendar = Calendar.getInstance();
         fromDatePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
@@ -147,20 +169,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         protected Boolean doInBackground(Void... params) {
             boolean result = true;
-            JSONObject jsonobject;
-            JSONArray jsonarray;
-            matricules = new ArrayList<>();
             try {
                 String direccioServidor = "http://server.blusoft.net:8080";
                 URL url = new URL(direccioServidor + "/ServicioWeb/webresources/generic/autobuses/");
                 BufferedReader reader = getBufferedReader(url);
-                jsonarray = new JSONArray(reader.readLine());
+                JSONArray jsonarray = new JSONArray(reader.readLine());
+                //Afegim tots els autobusos trobats a un array
                 for (int i = 0; i < jsonarray.length(); i++) {
-                    jsonobject = jsonarray.getJSONObject(i);
+                    JSONObject jsonobject = jsonarray.getJSONObject(i);
                     matricules.add(jsonobject.optString("matricula"));
                 }
+                //Per ultim, afegim una opcio "totes"
                 matricules.add("Todas");
-            } catch (Exception e) {
+            }
+            /*Fem catch dels diferents errors que podem trobar. Cualsevol error que ens doni
+             aqui impedira que es carregui completament l'Spinner.
+            */
+            catch (Exception e) {
                 result = false;
                 Log.e("Error", e.getMessage());
                 e.printStackTrace();
@@ -168,6 +193,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return result;
         }
 
+        /**
+         * Given a URL, returns a initialitzed BufferedReader. Default TimeOut is 5 seconds.
+         * Expects to receive a JSON response
+         * @param url The URL we want to connect to.
+         * @return The Buffered reader
+         * @throws java.io.IOException
+         */
         private BufferedReader getBufferedReader(URL url) throws java.io.IOException {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
@@ -178,16 +210,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         @Override
-        protected void onPostExecute(Boolean results) {
-            // Locate the spinner in activity_main.xml
-            System.out.println("onpostexecute");
-            if (results) {
+        protected void onPostExecute(Boolean result) {
+            // si s'han carregat les dades, inflem l'Spinner
+            if (result) {
                 Spinner mySpinner = (Spinner) findViewById(R.id.spinnerMatricules);
                 // Spinner adapter
                 mySpinner
                         .setAdapter(new ArrayAdapter<>(MainActivity.this,
                                 android.R.layout.simple_spinner_dropdown_item,
                                 matricules));
+                //Boolea de control per determinar si s'ha rebut totes les dades extenes
                 spinnerCarregat = true;
             } else {
                 Toast.makeText(MainActivity.this, "No s'han pogut carregar les dades. Hi ha conexió a internet?", Toast.LENGTH_LONG).show();

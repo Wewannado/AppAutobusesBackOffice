@@ -60,6 +60,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         botoEnrere.setOnClickListener(this);
         Button botoActAuto = (Button) findViewById(R.id.btnAturarActualitzacioAutomatica);
         botoActAuto.setOnClickListener(this);
+        //Recollim les dades de l'Intent si es la primera creacio de l'activity
         if (savedInstanceState == null) {
             Intent extras = getIntent();
             opcioEscollida = extras.getIntExtra("opcion", OPCIO_ULTIMA);
@@ -67,9 +68,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             switch (opcioEscollida) {
                 case OPCIO_ULTIMA:
                     break;
+                //Nomes es necesari recollir les dates en el cas que l'usuari hagi seleccionat aquesta opcio
                 case OPCIO_ENTRE_DADES:
                     dataInici = extras.getStringExtra("fechaInicio");
                     dataFi = extras.getStringExtra("fechaFinal");
+                    //En la opcio de seleccionar entre dades, la actualitzacio automatica esta
+                    // desactivada, per tant amaguem el boto.
                     botoActAuto.setVisibility(View.INVISIBLE);
                     break;
             }
@@ -79,6 +83,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onPause() {
         super.onPause();
+        //Quant l'activity entra en pausa, cambiem el boolean de control "actiu". Aixo fara que el
+        //handler s'aturi.
         Log.d(LOGTAG, "Onpause...");
         actiu=false;
     }
@@ -87,6 +93,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onResume() {
         super.onResume();
         Log.d(LOGTAG, "OnResume...");
+        //When resuming the activity, check if the actualitzacioAutomatica is on. If it's on, then
+        //change the boolean control "actiu" to true
         if(actualitzacioAutomatica){
             actiu=true;
             Log.d(LOGTAG, "Activat");
@@ -102,6 +110,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
         mMap.getUiSettings().setMapToolbarEnabled(false);
         Log.d(LOGTAG, "Map is ready");
+        //Map is ready, so we can start updating the GUI
         actualitzaDades();
     }
 
@@ -110,20 +119,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         final Handler handler = new Handler();
         final Runnable r = new Runnable() {
             public void run() {
+                //If we have the autoUpdate turned on and we're looking for the last position of some
+                //or various bus, create a Handler that will launch the update background task every 3000 ms
                 if (actiu && actualitzacioAutomatica && opcioEscollida!=OPCIO_ENTRE_DADES) {
                     AsyncTask tarea = new refrescarPosiciones();
                     final AsyncTask execute = tarea.execute();
                     handler.postDelayed(this, 3000);
                 }
+                //AutoUpdate not allowed in the "Entre Dates" option
                 else{
                     AsyncTask tarea = new refrescarPosiciones();
                     final AsyncTask execute = tarea.execute();
                 }
             }
         };
+        //Sets the handler to execute the Async task for the first time.
         handler.postDelayed(r, 0);
     }
 
+    /**
+     * This method disables the autoUpdate feature.
+     */
     private void desactivarActualitzacionsAutomatiques(){
         Button boto= (Button) findViewById(R.id.btnAturarActualitzacioAutomatica);
         boto.setText(R.string.activaActAut);
@@ -134,6 +150,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onClick(View view) {
         if (R.id.btnAturarActualitzacioAutomatica == view.getId()) {
             Button boto= (Button) findViewById(R.id.btnAturarActualitzacioAutomatica);
+            //Si esta activada, la desactivem, si no ho esta, l'activem.
             if(actualitzacioAutomatica){
                desactivarActualitzacionsAutomatiques();
             }
@@ -145,7 +162,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 actualitzaDades();
             }
         }
-
+        //Torna a la primera activity
         if (R.id.btnOpciones == view.getId()) {
             Log.d(LOGTAG, "Retornant a pantalla principal.");
             Intent i = new Intent(this, MainActivity.class);
@@ -155,9 +172,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    /**
+     * Classe interna que gestiona la actualitzacio en segon pla del mapa
+     */
     class refrescarPosiciones extends AsyncTask<Object, Integer, Boolean> {
 
-
+//Els diferents colors que tindran els Marcadors que es dibuixin al mapa
         public static final float HUE_RED = 0.0F;
         public static final float HUE_ORANGE = 30.0F;
         public static final float HUE_YELLOW = 60.0F;
@@ -183,11 +203,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         private void entreFechas(String matricula) {
-            System.out.println("TODO ENTRE FECHAS");
             BufferedReader reader;
             URL url = null;
             try {
                 if (matricula.equals("Todas")) {
+                    //TODO en un futur, es podra veure el recorregut de tots els autobusos entre dues dates.
                     System.out.println("Not supported yet");
                 } else {
                     url = new URL(direccioServidor+"/ServicioWeb/webresources/generic/obtenerPosiciones/" + matricula+"/"+dataInici+"-00:00:00/"+dataFi+"-23:59:00");
@@ -203,6 +223,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
 
+        /**
+         * Omple l'arrayLlist de posicions, o la ultima posicio d'un autobus, depenent de la
+         * matricula que es pasi
+         * @param matricula
+         */
         private void ultimaPosicion(String matricula) {
             BufferedReader reader;
             URL url = null;
@@ -212,7 +237,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     url = new URL(direccioServidor+"/ServicioWeb/webresources/generic/obtenerUltimasPosicionesTodos/");
                     reader = getBufferedReader(url);
                     llistanovesPosicions = new JSONArray(reader.readLine());
-                    System.out.println((llistanovesPosicions));
                 } else {
                     url = new URL(direccioServidor+"/ServicioWeb/webresources/generic/obtenerUltimaPosicion/" + matricula);
                     reader = getBufferedReader(url);
@@ -259,6 +283,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .snippet("Fecha posicion: "+posicio.getString("fecha"))
                     .title(posicio.getString("matricula"))
                     .icon(BitmapDescriptorFactory.defaultMarker(getColor(id_Color)));
+            //Es la primera actualitzacio del mapa, movem la posicio del mapa a la posicio obtinguda
             if(firstUpdate) {
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(posAutobus, 12));
                 firstUpdate=false;
@@ -267,6 +292,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             marcadors.add(mMap.addMarker(marker));
         }
 
+        /**
+         *  Retorna un FLOAT amb l'identificador de color adecuat per a que es puguin pintar els marcadors
+         * @param id
+         * @return
+         */
         private float getColor(int id){
             float color;
             switch(id%9){
@@ -301,6 +331,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return color;
         }
 
+
+        /**
+         * Pinta una linea entre dues posicions. NOT ACTUALLY USED YET
+         * @param posicio
+         * @param newPosicio
+         * @throws JSONException
+         */
         private void pintarLinea(JSONObject posicio, JSONObject newPosicio) throws JSONException {
             LatLng antPosAutobus = new LatLng(posicio.getDouble("posX"), posicio.getDouble("posY"));
             LatLng novaPosAutobus = new LatLng(newPosicio.getDouble("posX"), newPosicio.getDouble("posY"));
@@ -313,17 +350,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             System.out.println("Pintando entre posiciones "+antPosAutobus.toString()+novaPosAutobus.toString());
         }
 
+        /**
+         * Donada una llista JSONArray, intenta obtenir les posicions d'aquest JSON Array i crea una
+         * linea que uneix totes les posicions
+         * @param posicions
+         * @throws JSONException
+         */
         private void pintarLinea(JSONArray posicions) throws JSONException {
             ArrayList<LatLng> llistaLatLonAutobusos = new ArrayList<>();
             for (int i = 0; i < llistanovesPosicions.length(); i++) {
                 JSONObject jsonobject = llistanovesPosicions.getJSONObject(i);
                 LatLng PosAutobus = new LatLng(jsonobject.getDouble("posX"), jsonobject.getDouble("posY"));
-                System.out.println("pintando linea"+i);
                 llistaLatLonAutobusos.add(PosAutobus);
             }
             mMap.addPolyline(new PolylineOptions().addAll(llistaLatLonAutobusos).color(Color.RED));
         }
 
+        /**
+         * Busca un marcador al mapa mitjancant el seu "titol" (AKA matricula)
+         * @param matricula
+         * @return
+         */
         private Marker buscarMarcador(String matricula) {
             Marker item = null;
             for (Marker marcador : (Iterable<Marker>) marcadors) {
@@ -335,6 +382,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return item;
         }
 
+        /**
+         * Donat un marcador, elimina cualsevol marcador al mapa amb el mateix "title" (matricula)
+         * @param marcadorAEliminar
+         */
         private void eliminarMarcador(Marker marcadorAEliminar) {
             if (marcadorAEliminar != null) {
                 for (Marker item : (Iterable<Marker>) marcadors) {
@@ -358,7 +409,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     switch (opcioEscollida) {
                         case OPCIO_ULTIMA:
                             if (matricula_Autobus.equals("Todas")) {
-                                //TODO este codigo ha estado fallando aleatoriamente y no localizo el origen.
+                                //TODO este codigo ha estado fallando aleatoriamente y no localizo el patron de falla.
                                 Log.d(LOGTAG, "Pintando ultimas posiciones de todos los autobuses.");
                                 for (int i = 0; i < llistanovesPosicions.length(); i++) {
                                     JSONObject jsonobject = llistanovesPosicions.getJSONObject(i);
@@ -381,7 +432,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                         }
                                     } else {
                                         pintar(newPosicio,1);
-
                                         posicio = newPosicio;
                                     }
                                 } else {
@@ -393,14 +443,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             break;
                         case OPCIO_ENTRE_DADES:
                             Log.d(LOGTAG, "Pintando ultimas posiciones de todos los autobuses.");
-                            JSONObject jsonobject = llistanovesPosicions.getJSONObject(1);
-                            Marker marcador=buscarMarcador(jsonobject.getString("matricula"));
-                            if(marcador!=null){
-                                eliminarMarcador(marcador);
+                            if(llistanovesPosicions.length()!=0) {
+                                JSONObject jsonobject = llistanovesPosicions.getJSONObject(1);
+                                Marker marcador = buscarMarcador(jsonobject.getString("matricula"));
+                                if (marcador != null) {
+                                    eliminarMarcador(marcador);
+                                }
+                                Log.d(LOGTAG, "Posiciones obtenidas: " + llistanovesPosicions.length());
+                                pintarLinea(llistanovesPosicions);
+                                pintar(jsonobject, 1);
+                            }else{
+                                Toast.makeText(MapsActivity.this, "No se han encontrado posiciones entre las fechas seleccionadas del autobus:"+matricula_Autobus, Toast.LENGTH_SHORT).show();
                             }
-                            Log.d(LOGTAG, "Posiciones obtenidas: "+llistanovesPosicions.length());
-                            pintarLinea(llistanovesPosicions);
-                            pintar(jsonobject,1);
                             break;
                     }
                 } catch (org.json.JSONException ex) {
