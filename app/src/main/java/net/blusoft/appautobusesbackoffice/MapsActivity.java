@@ -172,13 +172,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     ultimaPosicion(matricula_Autobus);
                     break;
                 case MapsActivity.OPCIO_ENTRE_DADES:
-                    entreFechas();
+                    entreFechas(matricula_Autobus);
             }
             return true;
         }
 
-        private void entreFechas() {
+        private void entreFechas(String matricula) {
             System.out.println("TODO ENTRE FECHAS");
+            BufferedReader reader;
+            URL url = null;
+            try {
+                if (matricula.equals("Todas")) {
+                    System.out.println("Not supported yet");
+                } else {
+                    url = new URL(direccioServidor+"/ServicioWeb/webresources/generic/obtenerPosiciones/" + matricula+"/"+dataInici+"-00:00:00/"+dataFi+"-23:59:00");
+                    reader = getBufferedReader(url);
+                    llistanovesPosicions = new JSONArray(reader.readLine());
+                }
+            }catch (java.io.FileNotFoundException ex) {
+                Log.e(LOGTAG, "Error al obtenir la posicio de:" + url.toString()+"\n"+ex);
+            }catch (java.io.IOException ex) {
+                Log.e(LOGTAG, "Temps d'espera esgotat al iniciar la conexio amb la BBDD externa:" + url.toString()+"\n"+ex);
+            } catch (org.json.JSONException ex) {
+                Log.e(LOGTAG, "Error en la transformacio de l'objecte JSON: " + ex);
+            }
         }
 
         private void ultimaPosicion(String matricula) {
@@ -358,7 +375,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             }
                             break;
                         case OPCIO_ENTRE_DADES:
-                            
+                            Log.d(LOGTAG, "Pintando ultimas posiciones de todos los autobuses.");
+                            for (int i = 0; i < llistanovesPosicions.length(); i++) {
+                                JSONObject jsonobject = llistanovesPosicions.getJSONObject(i);
+                                pintar(jsonobject, i);
+                            }
                             break;
                     }
                 } catch (org.json.JSONException ex) {

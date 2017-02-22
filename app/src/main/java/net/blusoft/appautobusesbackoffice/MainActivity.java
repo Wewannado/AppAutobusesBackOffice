@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         editTextHInicio = (TextView) findViewById(R.id.editTextHInicio);
         editTextHFinal = (TextView) findViewById(R.id.editTextHFin);
         //DATE
-        dateFormatter = new SimpleDateFormat("dd-mm-yyyy", Locale.FRANCE);
+        dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.FRANCE);
         editTextHFinal.setInputType(InputType.TYPE_NULL);
         editTextHFinal.requestFocus();
         editTextHInicio.setInputType(InputType.TYPE_NULL);
