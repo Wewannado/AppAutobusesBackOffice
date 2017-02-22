@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         editTextHInicio = (TextView) findViewById(R.id.editTextHInicio);
         editTextHFinal = (TextView) findViewById(R.id.editTextHFin);
         //DATE
-        dateFormatter = new SimpleDateFormat("dd-mm-yyyy hh24:mm:ss", Locale.FRANCE);
+        dateFormatter = new SimpleDateFormat("dd-mm-yyyy", Locale.FRANCE);
         editTextHFinal.setInputType(InputType.TYPE_NULL);
         editTextHFinal.requestFocus();
         editTextHInicio.setInputType(InputType.TYPE_NULL);
@@ -109,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+
     private void setDateTimeField() {
         editTextHInicio.setOnClickListener(this);
         editTextHFinal.setOnClickListener(this);
@@ -119,6 +120,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                 Calendar newDate = Calendar.getInstance();
                 newDate.set(year, monthOfYear, dayOfMonth);
+
                 editTextHInicio.setText(dateFormatter.format(newDate.getTime()));
             }
 

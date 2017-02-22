@@ -358,7 +358,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             }
                             break;
                         case OPCIO_ENTRE_DADES:
-                            //TODO todo el codigo. (aqui va muuuucccchoooo codigo.)
+                            
                             break;
                     }
                 } catch (org.json.JSONException ex) {
