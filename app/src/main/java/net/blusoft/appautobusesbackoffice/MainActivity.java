@@ -80,13 +80,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (editTextHInicio.getText().toString().equals("") && editTextHFinal.getText().toString().equals("") && opcion == MapsActivity.OPCIO_ENTRE_DADES) {
                     Toast.makeText(this, "Fechas Obligatorias", Toast.LENGTH_SHORT).show();
                 } else {
-                    System.out.println("opcion marcada: " + opcion);
-                    Intent i = new Intent(this, MapsActivity.class);
-                    i.putExtra("matricula", spinnerMatricules.getSelectedItem().toString());
-                    i.putExtra("opcion", opcion);
-                    i.putExtra("fechaInicio", editTextHInicio.getText().toString());
-                    i.putExtra("fechaFinal", editTextHFinal.getText().toString());
-                    startActivity(i);
+                    if (opcion == MapsActivity.OPCIO_ENTRE_DADES && spinnerMatricules.getSelectedItem().toString().equals("Todas")) {
+                        Toast.makeText(MainActivity.this, "Veure les posicions entre dades de tots els autobusos no soportat en aquesta versió.", Toast.LENGTH_LONG).show();
+                    } else {
+                        System.out.println("opcion marcada: " + opcion);
+                        Intent i = new Intent(this, MapsActivity.class);
+                        i.putExtra("matricula", spinnerMatricules.getSelectedItem().toString());
+                        i.putExtra("opcion", opcion);
+                        i.putExtra("fechaInicio", editTextHInicio.getText().toString());
+                        i.putExtra("fechaFinal", editTextHFinal.getText().toString());
+                        startActivity(i);
+                    }
                 }
             } else {
                 Toast.makeText(MainActivity.this, "No s'han pogut carregar les dades. Hi ha conexió a internet?", Toast.LENGTH_LONG).show();

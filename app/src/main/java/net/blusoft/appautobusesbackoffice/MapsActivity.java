@@ -70,6 +70,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 case OPCIO_ENTRE_DADES:
                     dataInici = extras.getStringExtra("fechaInicio");
                     dataFi = extras.getStringExtra("fechaFinal");
+                    botoActAuto.setVisibility(View.INVISIBLE);
                     break;
             }
         }
@@ -109,14 +110,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         final Handler handler = new Handler();
         final Runnable r = new Runnable() {
             public void run() {
-                if (actiu && actualitzacioAutomatica) {
+                if (actiu && actualitzacioAutomatica && opcioEscollida!=OPCIO_ENTRE_DADES) {
                     AsyncTask tarea = new refrescarPosiciones();
                     final AsyncTask execute = tarea.execute();
                     handler.postDelayed(this, 3000);
                 }
+                else{
+                    AsyncTask tarea = new refrescarPosiciones();
+                    final AsyncTask execute = tarea.execute();
+                }
             }
         };
-        handler.postDelayed(r, 3000);
+        handler.postDelayed(r, 0);
     }
 
     private void desactivarActualitzacionsAutomatiques(){
@@ -233,8 +238,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         private BufferedReader getBufferedReader(URL url) throws java.io.IOException {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
-            conn.setReadTimeout(5000 /*milliseconds*/);
-            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(10000 /*milliseconds*/);
+            conn.setConnectTimeout(10000);
             conn.setRequestProperty("Content-Type", "application/json");
             return new BufferedReader(new InputStreamReader(conn.getInputStream()));
         }
@@ -305,6 +310,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             lineas.width(8);
             lineas.color(Color.RED);
             mMap.addPolyline(lineas);
+            System.out.println("Pintando entre posiciones "+antPosAutobus.toString()+novaPosAutobus.toString());
+        }
+
+        private void pintarLinea(JSONArray posicions) throws JSONException {
+            ArrayList<LatLng> llistaLatLonAutobusos = new ArrayList<>();
+            for (int i = 0; i < llistanovesPosicions.length(); i++) {
+                JSONObject jsonobject = llistanovesPosicions.getJSONObject(i);
+                LatLng PosAutobus = new LatLng(jsonobject.getDouble("posX"), jsonobject.getDouble("posY"));
+                System.out.println("pintando linea"+i);
+                llistaLatLonAutobusos.add(PosAutobus);
+            }
+            mMap.addPolyline(new PolylineOptions().addAll(llistaLatLonAutobusos).color(Color.RED));
         }
 
         private Marker buscarMarcador(String matricula) {
@@ -376,10 +393,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             break;
                         case OPCIO_ENTRE_DADES:
                             Log.d(LOGTAG, "Pintando ultimas posiciones de todos los autobuses.");
-                            for (int i = 0; i < llistanovesPosicions.length(); i++) {
-                                JSONObject jsonobject = llistanovesPosicions.getJSONObject(i);
-                                pintar(jsonobject, i);
+                            JSONObject jsonobject = llistanovesPosicions.getJSONObject(1);
+                            Marker marcador=buscarMarcador(jsonobject.getString("matricula"));
+                            if(marcador!=null){
+                                eliminarMarcador(marcador);
                             }
+                            Log.d(LOGTAG, "Posiciones obtenidas: "+llistanovesPosicions.length());
+                            pintarLinea(llistanovesPosicions);
+                            pintar(jsonobject,1);
                             break;
                     }
                 } catch (org.json.JSONException ex) {
